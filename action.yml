@@ -47,6 +47,9 @@ outputs:
   signed-archive:
     description: "The path to the signed package archive, if the package was signed."
     value: ${{ steps.sign-package.outputs.signed-archive }}
+  created-archive:
+    description: "Whether a signed package archive was created."
+    value: ${{ steps.sign-package.outputs.signed-archive != '' }}
 
 runs:
   using: "composite"
