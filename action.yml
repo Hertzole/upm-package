@@ -157,8 +157,16 @@ runs:
         fi
 
         archive="${archives[0]}"
-        tar -tzf "$archive" | grep -qx 'package/package.json'
-        tar -tzf "$archive" | grep -qx 'package/.attestation.p7m'
+        listing=$(tar -tzf "$archive")
+
+        if ! grep -Fqx 'package/package.json' <<< "$listing"; then
+          echo "ERROR: package/package.json not found in archive" >&2
+          exit 1
+        fi
+        if ! grep -Fqx 'package/.attestation.p7m' <<< "$listing"; then
+          echo "ERROR: package/.attestation.p7m not found in archive" >&2
+          exit 1
+        fi
 
         echo "PACKAGE_ARCHIVE=$archive" >> "$GITHUB_ENV"
         echo "::set-output name=signed-archive::$archive"
