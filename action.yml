@@ -56,13 +56,13 @@ runs:
           mv /tmp/LICENSE LICENSE
           git add LICENSE
         fi
-        if [[ "${{ inputs.remove-tests }}" == "true" && -d "Tests" ]]; then
+        if [[ "${{ inputs.remove-tests }}" == 'true' && -d "Tests" ]]; then
           rm -rf Tests
           rm -f Tests.meta
         fi
-        git config --global user.name "github-bot"
-        git config --global user.email "github-bot@users.noreply.github.com"
-        MSG="${{ inputs.skip-ci == "true" && "chore: create upm package [skip ci]" || "chore: create upm package" }}"
+        git config --global user.name 'github-bot'
+        git config --global user.email 'github-bot@users.noreply.github.com'
+        MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
         git commit -am "$MSG"
         git push -f -u origin "$BRANCH_NAME"
       shell: bash
