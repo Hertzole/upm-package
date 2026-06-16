@@ -1,25 +1,25 @@
-name: 'UPM Release'
-description: 'Creates a Unity package branch, and optionally creates a signed release tar ball.'
+name: "UPM Release"
+description: "Creates a Unity package branch, and optionally creates a signed release tar ball."
 inputs:
   package-root:
-    description: 'The root directory of the package to be released, relative to the repository root.'
+    description: "The root directory of the package to be released, relative to the repository root."
     required: false
-    default: '**/Packages/**/package.json'
+    default: "**/Packages/**/package.json"
   branch-name:
-    description: 'The name of the branch to be created for the release.'
+    description: "The name of the branch to be created for the release."
     required: false
-    default: 'upm'
+    default: "upm"
   skip-ci:
-    description: 'Whether to skip CI for the commit that creates the release branch.'
+    description: "Whether to skip CI for the commit that creates the release branch."
     required: false
-    default: 'true'
+    default: "true"
   remove-tests:
-    description: 'Whether to remove the Tests folder from the release branch.'
+    description: "Whether to remove the Tests folder from the release branch."
     required: false
-    default: 'true'
+    default: "true"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Create branch
       run: |
@@ -59,9 +59,9 @@ runs:
           rm -rf Tests
           rm -f Tests.meta
         fi
-        git config --global user.name 'github-bot'
-        git config --global user.email 'github-bot@users.noreply.github.com'
-        MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
+        git config --global user.name "github-bot"
+        git config --global user.email "github-bot@users.noreply.github.com"
+        MSG="${{ inputs.skip-ci == "true" && "chore: create upm package [skip ci]" || "chore: create upm package" }}"
         git commit -am "$MSG"
         git push -f -u origin "$BRANCH_NAME"
       shell: bash
