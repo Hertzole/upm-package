@@ -32,7 +32,6 @@ runs:
     - name: Create branch
       run: |
         PKG_LOC=$(find . -path '*/Packages/*/package.json' -exec dirname {} \; | head -1 | sed 's|^\./||') 
-        echo "Package location: $PKG_LOC"
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
         git subtree split -P "$PKG_LOC" -b "$BRANCH_NAME"
         if [[ "${{ inputs.keep-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
@@ -48,7 +47,7 @@ runs:
           mv README.md /tmp/README.md
         fi
         if [[ -d "$PKG_LOC/Plugins" ]]; then
-          mv "$PKG_ROOT/Plugins" /tmp/Plugins
+          mv "$PKG_LOC/Plugins" /tmp/Plugins
         fi
         git checkout "$BRANCH_NAME"
         if [[ -f "/tmp/README.md" ]]; then
