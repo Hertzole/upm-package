@@ -10,21 +10,25 @@ inputs:
     required: false
     default: "upm"
   skip-ci:
-    description: "Whether to skip CI for the commit that creates the release branch."
+    description: "Whether to skip CI for the commit."
     required: false
     default: "true"
   remove-tests:
-    description: "Whether to remove the Tests folder from the release branch."
+    description: "Whether to remove the Tests folder."
     required: false
     default: "true"
-  keep-samples:
-    description: "Whether to keep the Assets/Samples folder in the release branch."
+  include-samples:
+    description: "Whether to keep the Assets/Samples folder."
     required: false
     default: "true"
   samples-destination:
-    description: "The destination path where the package samples that will be moved to 'Samples~' are location."
+    description: "The destination path where the package samples that will be moved to 'Samples~' are located."
     required: false
     default: "Assets/Samples"
+  include-plugins:
+    description: "Whether to keep the Plugins folder inside the package."
+    required: false
+    default: "true"
   signing-key-id:
     description: "Unity service account key ID with permissions to sign packages. Required if signing the package."
     required: false
@@ -51,7 +55,6 @@ runs:
 
         echo "PACKAGE_ROOT=$package_directory" >> "$GITHUB_ENV"
         echo "PACKAGE_JSON=$package_json_path" >> "$GITHUB_ENV"
-        echo "SIGNING_DIST_DIR=/tmp/signed-upm-dist" >> "$GITHUB_ENV"
 
         echo "Found package root: $package_directory"
         echo "Found package.json path: $package_json_path"
@@ -61,7 +64,7 @@ runs:
       run: |
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
         git subtree split -P "$PACKAGE_ROOT" -b "$BRANCH_NAME"
-        if [[ "${{ inputs.keep-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
+        if [[ "${{ inputs.include-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
           mv "$SAMPLES_DESTINATION" /tmp/example
         fi
         if [[ -f "CHANGELOG.md" ]]; then
@@ -73,7 +76,7 @@ runs:
         if [[ -f "README.md" ]]; then
           mv README.md /tmp/README.md
         fi
-        if [[ -d "$PACKAGE_ROOT/Plugins" ]]; then
+        if [[ "${{ inputs.include-plugins }}" == 'true' && -d "$PACKAGE_ROOT/Plugins" ]]; then
           mv "$PACKAGE_ROOT/Plugins" /tmp/Plugins
         fi
         git checkout "$BRANCH_NAME"
@@ -138,6 +141,7 @@ runs:
     - name: Sign package
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       run: |
+        echo "SIGNING_DIST_DIR=/tmp/signed-upm-dist" >> "$GITHUB_ENV"
         mkdir -p "$SIGNING_DIST_DIR"
         upm pack ./ --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
       shell: bash
