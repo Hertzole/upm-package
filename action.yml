@@ -140,6 +140,10 @@ runs:
         mkdir -p "$SIGNING_DIST_DIR"
         upm pack ./package --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
       shell: bash
+      env:
+        UPM_SERVICE_ACCOUNT_KEY_ID: ${{ inputs.signing-key-id }}
+        UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ inputs.signing-key-secret }}
+        UPM_ORG_ID: ${{ inputs.signing-org-id }}
 
     - name: Print signed package info
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
