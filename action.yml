@@ -131,6 +131,7 @@ runs:
         package_name="$(jq -r '.name' "package.json")"
         package_version="$(jq -r '.version' "package.json")"
 
+        echo "SIGNING_DIST_DIR=/tmp/signed-upm-dist" >> "$GITHUB_ENV"
         echo "PACKAGE_NAME=$package_name" >> "$GITHUB_ENV"
         echo "PACKAGE_VERSION=$package_version" >> "$GITHUB_ENV"
 
@@ -150,7 +151,6 @@ runs:
     - name: Sign package
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       run: |
-        echo "SIGNING_DIST_DIR=/tmp/signed-upm-dist" >> "$GITHUB_ENV"
         mkdir -p "$SIGNING_DIST_DIR"
         upm pack ./ --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
       shell: bash
