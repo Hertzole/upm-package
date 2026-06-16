@@ -151,6 +151,19 @@ runs:
         rm install.sh
       shell: bash
 
+      # Create a .npmignore file to prevent other stuff from being included.
+    - name: Create ignore file
+      run: |
+        {
+          echo "**/[Bb]in/**"
+          echo "**/[Oo]bj/**"
+          echo "**/[Ll]ib/**"
+          echo "**/[Ll]ogs/**"
+          echo "**/[Tt]emp/**"
+        } > .gitignore
+      shell: bash
+
+
     - name: Sign package
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       run: |
