@@ -173,3 +173,9 @@ runs:
         echo "Archive: $(basename "$archive")"
         tar -xOzf "$archive" package/package.json | jq '{name, version}'
       shell: bash
+
+    - name: Return to original branch
+      run: git checkout "$ORIGINAL_BRANCH"
+      shell: bash
+      env:
+        ORIGINAL_BRANCH: ${{ github.ref_name }}
