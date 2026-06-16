@@ -1,10 +1,14 @@
-name: "UPM Release"
+name: "UPM Package"
 description: "Creates a Unity package branch, and optionally creates a signed release tar ball."
 inputs:
   package-json:
     description: "The path to the package.json file of the package to be released, relative to the repository root."
     required: false
     default: "*/Packages/*/package.json"
+  create-branch:
+    description: "Whether to create a separate branch for the package. If false, no branch will be created."
+    required: false
+    default: "true"
   branch-name:
     description: "The name of the branch to be created for the release."
     required: false
@@ -106,11 +110,13 @@ runs:
           rm -rf Tests
           rm -f Tests.meta
         fi
-        git config --global user.name 'github-bot'
-        git config --global user.email 'github-bot@users.noreply.github.com'
-        MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
-        git commit -am "$MSG"
-        git push -f -u origin "$BRANCH_NAME"
+        if [[ "${{ inputs.create-branch }}" == 'true' ]]; then
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
+          git commit -am "$MSG"
+          git push -f -u origin "$BRANCH_NAME"
+        fi
       shell: bash
       env:
         BRANCH_NAME: ${{ inputs.branch-name }}
