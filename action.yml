@@ -142,6 +142,7 @@ runs:
       shell: bash
 
     - name: Print signed package info
+      if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       id: sign-package
       run: |
         shopt -s nullglob
