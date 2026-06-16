@@ -4,7 +4,7 @@ inputs:
   package-root:
     description: "The root directory of the package to be released, relative to the repository root."
     required: false
-    default: "**/Packages/**/package.json"
+    default: "*/Packages/*/package.json"
   branch-name:
     description: "The name of the branch to be created for the release."
     required: false
@@ -23,8 +23,9 @@ runs:
   steps:
     - name: Create branch
       run: |
+        PKG_LOC=$(find . -path "$PKG_ROOT" -exec dirname {} \; | head -1)
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
-        git subtree split -P "$PKG_ROOT" -b "$BRANCH_NAME"
+        git subtree split -P "$PKG_LOC" -b "$BRANCH_NAME"
         if [[ -d "Assets/Samples" ]]; then
           mv "Assets/Samples" /tmp/example
         fi
