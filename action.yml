@@ -118,3 +118,4 @@ runs:
 
         printf 'Package name: %s\n' "$package_name"
         printf 'Package version: %s\n' "$package_version"
+      shell: bash
