@@ -1,8 +1,8 @@
 name: "UPM Release"
 description: "Creates a Unity package branch, and optionally creates a signed release tar ball."
 inputs:
-  package-root:
-    description: "The root directory of the package to be released, relative to the repository root."
+  package-json:
+    description: "The path to the package.json file of the package to be released, relative to the repository root."
     required: false
     default: "*/Packages/*/package.json"
   branch-name:
@@ -25,15 +25,38 @@ inputs:
     description: "The destination path where the package samples that will be moved to 'Samples~' are location."
     required: false
     default: "Assets/Samples"
+  signing-key-id:
+    description: "Unity service account key ID with permissions to sign packages. Required if signing the package."
+    required: false
+  signing-key-secret:
+    description: "Unity service account key secret with permissions to sign packages. Required if signing the package."
+    required: false
+  signing-org-id:
+    description: "Unity organization ID that the service account belongs to. Required if signing the package."
+    required: false
 
 runs:
   using: "composite"
+  env:
+    SIGNING_DIST_DIR: /tmp/signed-upm-dist
   steps:
+    - name: Find package root
+      id: find-package-root
+      run: |
+        package_directory=$(find . -path "${{ inputs.package-json }}" -exec dirname {} \; | head -1 | sed 's|^\./||')
+        package_json_path="$package_directory/package.json"
+
+        echo "PACKAGE_ROOT=$package_directory" >> "$GITHUB_ENV"
+        echo "PACKAGE_JSON=$package_json_path" >> "$GITHUB_ENV"
+
+        echo "Found package root: $package_directory"
+        echo "Found package.json path: $package_json_path"
+      shell: bash
+
     - name: Create branch
       run: |
-        PKG_LOC=$(find . -path '*/Packages/*/package.json' -exec dirname {} \; | head -1 | sed 's|^\./||') 
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
-        git subtree split -P "$PKG_LOC" -b "$BRANCH_NAME"
+        git subtree split -P "$PACKAGE_ROOT" -b "$BRANCH_NAME"
         if [[ "${{ inputs.keep-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
           mv "$SAMPLES_DESTINATION" /tmp/example
         fi
@@ -46,8 +69,8 @@ runs:
         if [[ -f "README.md" ]]; then
           mv README.md /tmp/README.md
         fi
-        if [[ -d "$PKG_LOC/Plugins" ]]; then
-          mv "$PKG_LOC/Plugins" /tmp/Plugins
+        if [[ -d "$PACKAGE_ROOT/Plugins" ]]; then
+          mv "$PACKAGE_ROOT/Plugins" /tmp/Plugins
         fi
         git checkout "$BRANCH_NAME"
         if [[ -f "/tmp/README.md" ]]; then
@@ -83,6 +106,17 @@ runs:
         git push -f -u origin "$BRANCH_NAME"
       shell: bash
       env:
-        PKG_ROOT: ${{ inputs.package-root }}
         BRANCH_NAME: ${{ inputs.branch-name }}
         SAMPLES_DESTINATION: ${{ inputs.samples-destination }}
+
+    - name: Read package metadata
+      if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
+      run: |
+        package_name="$(jq -r '.name' "$PACKAGE_JSON")"
+        package_version="$(jq -r '.version' "$PACKAGE_JSON")"
+
+        echo "PACKAGE_NAME=$package_name" >> "$GITHUB_ENV"
+        echo "PACKAGE_VERSION=$package_version" >> "$GITHUB_ENV"
+
+        printf 'Package name: %s\n' "$package_name"
+        printf 'Package version: %s\n' "$package_version"
