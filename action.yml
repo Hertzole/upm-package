@@ -24,6 +24,7 @@ runs:
     - name: Create branch
       run: |
         PKG_LOC=$(find . -path "$PKG_ROOT" -exec dirname {} \; | head -1)
+        echo "Package location: $PKG_LOC"
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
         git subtree split -P "$PKG_LOC" -b "$BRANCH_NAME"
         if [[ -d "Assets/Samples" ]]; then
