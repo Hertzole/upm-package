@@ -132,6 +132,7 @@ runs:
         curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o install.sh
         bash install.sh
         echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
+        rm install.sh
       shell: bash
 
     - name: Sign package
