@@ -138,7 +138,7 @@ runs:
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       run: |
         mkdir -p "$SIGNING_DIST_DIR"
-        upm pack ./package --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
+        upm pack ./ --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
       shell: bash
       env:
         UPM_SERVICE_ACCOUNT_KEY_ID: ${{ inputs.signing-key-id }}
