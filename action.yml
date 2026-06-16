@@ -47,6 +47,9 @@ runs:
         if [[ -f "README.md" ]]; then
           mv README.md /tmp/README.md
         fi
+        if [[ -d "$PKG_LOC/Plugins" ]]; then
+          mv "$PKG_ROOT/Plugins" /tmp/Plugins
+        fi
         git checkout "$BRANCH_NAME"
         if [[ -f "/tmp/README.md" ]]; then
           mv /tmp/README.md README.md
@@ -64,6 +67,11 @@ runs:
         if [[ -f "/tmp/LICENSE" ]]; then
           mv /tmp/LICENSE LICENSE
           git add LICENSE
+        fi
+        if [[ -d "/tmp/Plugins" ]]; then
+          mkdir "Plugins" -p
+          mv /tmp/Plugins/* "Plugins/"
+          git add "Plugins"
         fi
         if [[ "${{ inputs.remove-tests }}" == 'true' && -d "Tests" ]]; then
           rm -rf Tests
