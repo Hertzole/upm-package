@@ -37,8 +37,6 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    SIGNING_DIST_DIR: /tmp/signed-upm-dist
   steps:
     - name: Find package root
       id: find-package-root
