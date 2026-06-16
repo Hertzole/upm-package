@@ -35,6 +35,11 @@ inputs:
     description: "Unity organization ID that the service account belongs to. Required if signing the package."
     required: false
 
+outputs:
+  signed-archive:
+    description: "The path to the signed package archive, if the package was signed."
+    value: ${{ steps.sign-package.outputs.signed-archive }}
+
 runs:
   using: "composite"
   steps:
@@ -46,6 +51,7 @@ runs:
 
         echo "PACKAGE_ROOT=$package_directory" >> "$GITHUB_ENV"
         echo "PACKAGE_JSON=$package_json_path" >> "$GITHUB_ENV"
+        echo "SIGNING_DIST_DIR=/tmp/signed-upm-dist" >> "$GITHUB_ENV"
 
         echo "Found package root: $package_directory"
         echo "Found package.json path: $package_json_path"
@@ -118,4 +124,39 @@ runs:
 
         printf 'Package name: %s\n' "$package_name"
         printf 'Package version: %s\n' "$package_version"
+      shell: bash
+
+    - name: Install Unity UPM CLI
+      if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
+      run: |
+        curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o install.sh
+        bash install.sh
+        echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
+      shell: bash
+
+    - name: Sign package
+      if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
+      run: |
+        mkdir -p "$SIGNING_DIST_DIR"
+        upm pack ./package --organization-id "${{ inputs.signing-org-id }}" --destination "$SIGNING_DIST_DIR"
+      shell: bash
+
+    - name: Print signed package info
+      id: sign-package
+      run: |
+        shopt -s nullglob
+        archives=("$SIGNING_DIST_DIR"/*.tgz "$SIGNING_DIST_DIR"/*.tar.gz)
+        if [ "${#archives[@]}" -ne 1 ]; then
+          printf 'Expected exactly one signed package archive, found %s\n' "${#archives[@]}" >&2
+          exit 1
+        fi
+
+        archive="${archives[0]}"
+        tar -tzf "$archive" | grep -qx 'package.json'
+        tar -tzf "$archive" | grep -qx '.attestation.p7m'
+
+        echo "PACKAGE_ARCHIVE=$archive" >> "$GITHUB_ENV"
+        echo "::set-output name=signed-archive::$archive"
+        printf 'Archive: %s\n' "$(basename "$archive")"
+        tar -xOzf "$archive" package.json | jq '{name, version}'
       shell: bash
