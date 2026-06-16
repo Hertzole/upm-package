@@ -17,6 +17,14 @@ inputs:
     description: "Whether to remove the Tests folder from the release branch."
     required: false
     default: "true"
+  keep-samples:
+    description: "Whether to keep the Assets/Samples folder in the release branch."
+    required: false
+    default: "true"
+  samples-destination:
+    description: "The destination path where the package samples that will be moved to 'Samples~' are location."
+    required: false
+    default: "Assets/Samples"
 
 runs:
   using: "composite"
@@ -27,8 +35,8 @@ runs:
         echo "Package location: $PKG_LOC"
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
         git subtree split -P "$PKG_LOC" -b "$BRANCH_NAME"
-        if [[ -d "Assets/Samples" ]]; then
-          mv "Assets/Samples" /tmp/example
+        if [[ "${{ inputs.keep-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
+          mv "$SAMPLES_DESTINATION" /tmp/example
         fi
         if [[ -f "CHANGELOG.md" ]]; then
           mv CHANGELOG.md /tmp/CHANGELOG.md
@@ -70,3 +78,4 @@ runs:
       env:
         PKG_ROOT: ${{ inputs.package-root }}
         BRANCH_NAME: ${{ inputs.branch-name }}
+        SAMPLES_DESTINATION: ${{ inputs.samples-destination }}
