@@ -152,7 +152,7 @@ runs:
         shopt -s nullglob
         archives=("$SIGNING_DIST_DIR"/*.tgz "$SIGNING_DIST_DIR"/*.tar.gz)
         if [ "${#archives[@]}" -ne 1 ]; then
-          printf 'Expected exactly one signed package archive, found %s\n' "${#archives[@]}" >&2
+          echo "Expected exactly one signed package archive, found ${#archives[@]}" >&2
           exit 1
         fi
 
@@ -162,6 +162,6 @@ runs:
 
         echo "PACKAGE_ARCHIVE=$archive" >> "$GITHUB_ENV"
         echo "::set-output name=signed-archive::$archive"
-        printf 'Archive: %s\n' "$(basename "$archive")"
+        echo "Archive: $(basename "$archive")"
         tar -xOzf "$archive" package.json | jq '{name, version}'
       shell: bash
