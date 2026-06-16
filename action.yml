@@ -110,8 +110,8 @@ runs:
     - name: Read package metadata
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
       run: |
-        package_name="$(jq -r '.name' "$PACKAGE_JSON")"
-        package_version="$(jq -r '.version' "$PACKAGE_JSON")"
+        package_name="$(jq -r '.name' "package.json")"
+        package_version="$(jq -r '.version' "package.json")"
 
         echo "PACKAGE_NAME=$package_name" >> "$GITHUB_ENV"
         echo "PACKAGE_VERSION=$package_version" >> "$GITHUB_ENV"
