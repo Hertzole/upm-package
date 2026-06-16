@@ -169,7 +169,7 @@ runs:
         fi
 
         echo "PACKAGE_ARCHIVE=$archive" >> "$GITHUB_ENV"
-        echo "signed-archive=$archive" >> "$GITHUB_ENV"
+        echo "signed-archive=$archive" >> "$GITHUB_OUTPUT"
         echo "Archive: $(basename "$archive")"
         tar -xOzf "$archive" package/package.json | jq '{name, version}'
       shell: bash
