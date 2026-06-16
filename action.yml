@@ -89,7 +89,10 @@ runs:
         if [[ "${{ inputs.include-plugins }}" == 'true' && -d "$PACKAGE_ROOT/Plugins" ]]; then
           mv "$PACKAGE_ROOT/Plugins" /tmp/Plugins
         fi
+
+        git restore .
         git checkout "$BRANCH_NAME"
+
         if [[ -f "/tmp/README.md" ]]; then
           mv /tmp/README.md README.md
           git add README.md
@@ -211,6 +214,9 @@ runs:
       run: |
         if [[ -f ".gitignore" ]]; then
           rm -f .gitignore
+        fi
+        if [[ -f ".npmignore" ]]; then
+          rm -f .npmignore
         fi
         git checkout "$ORIGINAL_BRANCH"
       shell: bash
