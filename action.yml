@@ -1,4 +1,4 @@
-name: 'UPM Release',
+name: 'UPM Release'
 description: 'Creates a Unity package branch, and optionally creates a signed release tar ball.'
 inputs:
   package-root:
