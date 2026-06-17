@@ -163,6 +163,7 @@ runs:
           echo "**/[Ll]ib/**"
           echo "**/[Ll]ogs/**"
           echo "**/[Tt]emp/**"
+          echo "[Ll]icense.ulf"
         } > .gitignore
       shell: bash
 
