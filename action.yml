@@ -85,12 +85,24 @@ runs:
           mv CHANGELOG.md /tmp/CHANGELOG.md
         fi
 
+        if [[ -f "CHANGELOG" ]]; then
+          mv CHANGELOG /tmp/CHANGELOG
+        fi
+
+        if [[ -f "LICENSE.md" ]]; then
+          mv LICENSE.md /tmp/LICENSE.md
+        fi
+
         if [[ -f "LICENSE" ]]; then
           mv LICENSE /tmp/LICENSE
         fi
 
         if [[ -f "README.md" ]]; then
           mv README.md /tmp/README.md
+        fi
+
+        if [[ -f "README" ]]; then
+          mv README /tmp/README
         fi
       shell: bash
 
