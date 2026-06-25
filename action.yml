@@ -123,7 +123,7 @@ runs:
     - name: Restore files
       run: |
         if [[ -f "/tmp/.gitignore" ]]; then
-          mv /tmp/.gitignore .gitignore
+          cp /tmp/.gitignore .gitignore
         fi
 
         if [[ -f "/tmp/README.md" ]]; then
