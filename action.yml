@@ -67,69 +67,121 @@ runs:
         echo "Found package.json path: $package_json_path"
       shell: bash
 
-    - name: Create branch
+    - name: Split package
       run: |
         git branch -d "$BRANCH_NAME" &> /dev/null || echo "$BRANCH_NAME branch not found"
         git subtree split -P "$PACKAGE_ROOT" -b "$BRANCH_NAME"
+      shell: bash
+      env:
+        BRANCH_NAME: ${{ inputs.branch-name }}
+
+    - name: Move files
+      run: |
         if [[ -f ".gitignore" ]]; then
           cp .gitignore /tmp/.gitignore
         fi
-        if [[ "${{ inputs.include-samples }}" == 'true' && -d "$SAMPLES_DESTINATION" ]]; then
-          mv "$SAMPLES_DESTINATION" /tmp/example
-        fi
+
         if [[ -f "CHANGELOG.md" ]]; then
           mv CHANGELOG.md /tmp/CHANGELOG.md
         fi
+
         if [[ -f "LICENSE" ]]; then
           mv LICENSE /tmp/LICENSE
         fi
+
         if [[ -f "README.md" ]]; then
           mv README.md /tmp/README.md
         fi
-        if [[ "${{ inputs.include-plugins }}" == 'true' && -d "$PACKAGE_ROOT/Plugins" ]]; then
-          mv "$PACKAGE_ROOT/Plugins" /tmp/Plugins
-        fi
+      shell: bash
 
+    - name: Move samples
+      if: ${{ inputs.include-samples == 'true' }}
+      run: |
+        if [[ -d "$SAMPLES_DESTINATION" ]]; then
+          mv "$SAMPLES_DESTINATION" /tmp/example
+        fi
+      shell: bash
+      env:
+        SAMPLES_DESTINATION: ${{ inputs.samples-destination }}
+
+    - name: Move plugins
+      if: ${{ inputs.include-plugins == 'true' }}
+      run: |
+        if [[ -d "Plugins" ]]; then
+          mv "Plugins" /tmp/Plugins
+        fi
+      shell: bash
+
+    - name: Checkout
+      run: |
         git restore .
         git checkout "$BRANCH_NAME"
+      shell: bash
+      env:
+        BRANCH_NAME: ${{ inputs.branch-name }}
+
+    - name: Restore files
+      run: |
+        if [[ -f "/tmp/.gitignore" ]]; then
+          mv /tmp/.gitignore .gitignore
+        fi
 
         if [[ -f "/tmp/README.md" ]]; then
           mv /tmp/README.md README.md
           git add README.md
         fi
+
+        if [[ -f "/tmp/CHANGELOG.md" ]]; then
+          mv /tmp/CHANGELOG.md CHANGELOG.md
+          git add CHANGELOG.md
+        fi
+
+        if [[ -f "/tmp/LICENSE" ]]; then
+          mv /tmp/LICENSE LICENSE
+          git add LICENSE
+        fi
+      shell: bash
+
+    - name: Restore samples
+      if: ${{ inputs.include-samples == 'true' }}
+      run: |
         if [[ -d "/tmp/example" ]]; then
           mkdir "Samples~"
           mv /tmp/example/* "Samples~/"
           git add "Samples~"
         fi
-        if [[ -f "/tmp/CHANGELOG.md" ]]; then
-          mv /tmp/CHANGELOG.md CHANGELOG.md
-          git add CHANGELOG.md
-        fi
-        if [[ -f "/tmp/LICENSE" ]]; then
-          mv /tmp/LICENSE LICENSE
-          git add LICENSE
-        fi
+      shell: bash
+
+    - name: Restore plugins
+      if: ${{ inputs.include-plugins == 'true' }}
+      run: |
         if [[ -d "/tmp/Plugins" ]]; then
           mkdir "Plugins" -p
           mv /tmp/Plugins/* "Plugins/"
           git add "Plugins"
         fi
-        if [[ "${{ inputs.remove-tests }}" == 'true' && -d "Tests" ]]; then
+      shell: bash
+
+    - name: Remove tests
+      if: ${{ inputs.remove-tests == 'true' }}
+      run: |
+        if [[ -d "Tests" ]]; then
           rm -rf Tests
           rm -f Tests.meta
         fi
-        if [[ "${{ inputs.create-branch }}" == 'true' ]]; then
-          git config --global user.name 'github-bot'
-          git config --global user.email 'github-bot@users.noreply.github.com'
-          MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
-          git commit -am "$MSG"
-          git push -f -u origin "$BRANCH_NAME"
-        fi
+      shell: bash
+
+    - name: Commit branch
+      if: ${{ inputs.create-branch == 'true' }}
+      run: |
+        git config --global user.name 'github-bot'
+        git config --global user.email 'github-bot@users.noreply.github.com'
+        MSG="${{ inputs.skip-ci == 'true' && 'chore: create upm package [skip ci]' || 'chore: create upm package' }}"
+        git commit -am "$MSG"
+        git push -f -u origin "$BRANCH_NAME"
       shell: bash
       env:
         BRANCH_NAME: ${{ inputs.branch-name }}
-        SAMPLES_DESTINATION: ${{ inputs.samples-destination }}
 
     - name: Read package metadata
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
@@ -167,7 +219,6 @@ runs:
           echo "*.ulf"
         } > .gitignore
       shell: bash
-
 
     - name: Sign package
       if: ${{ inputs.signing-key-id && inputs.signing-key-secret && inputs.signing-org-id }}
