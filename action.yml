@@ -291,6 +291,7 @@ runs:
       shell: bash
 
     - name: Return to original branch
+      if: ${{ env.ORIGINAL_BRANCH }}
       run: |
         if [[ -f ".gitignore" ]]; then
           rm -f .gitignore
