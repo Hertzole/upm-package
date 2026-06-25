@@ -139,17 +139,32 @@ runs:
         fi
 
         if [[ -f "/tmp/README.md" ]]; then
-          mv /tmp/README.md README.md
+          mv -f /tmp/README.md README.md
           git add README.md
         fi
 
+        if [[ -f "/tmp/README" ]]; then
+          mv -f /tmp/README README
+          git add README
+        fi
+
         if [[ -f "/tmp/CHANGELOG.md" ]]; then
-          mv /tmp/CHANGELOG.md CHANGELOG.md
+          mv -f /tmp/CHANGELOG.md CHANGELOG.md
           git add CHANGELOG.md
         fi
 
+        if [[ -f "/tmp/CHANGELOG" ]]; then
+          mv -f /tmp/CHANGELOG CHANGELOG
+          git add CHANGELOG
+        fi
+
+        if [[ -f "/tmp/LICENSE.md" ]]; then
+          mv -f /tmp/LICENSE.md LICENSE.md
+          git add LICENSE.md
+        fi
+
         if [[ -f "/tmp/LICENSE" ]]; then
-          mv /tmp/LICENSE LICENSE
+          mv -f /tmp/LICENSE LICENSE
           git add LICENSE
         fi
       shell: bash
